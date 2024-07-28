@@ -107,6 +107,7 @@ var screenWidth: c_int = 1500;
 var screenHeight: c_int = 1000;
 const windowTitle = "MaTrIX RaIn";
 const windowFPS: c_int = 30;
+var frameCount: c_int = 0;
 const font_path = "assets/dejavu.fnt";
 const icon_path = "assets/icon.png";
 
@@ -134,7 +135,7 @@ pub fn main() !void {
 
     raylib.setTargetFPS(windowFPS);
 
-    const numberOfTrails: usize = 2000;
+    const numberOfTrails: usize = 500;
     const allocator = std.heap.page_allocator;
     const trails: []Trail = try allocator.alloc(Trail, numberOfTrails);
     defer allocator.free(trails);
@@ -146,13 +147,15 @@ pub fn main() !void {
         if (raylib.isKeyPressed(raylib.KeyboardKey.key_q)) {
             raylib.toggleFullscreen();
         }
+        raylib.clearBackground(backgroundColor);
+
         raylib.beginDrawing();
         defer raylib.endDrawing();
 
         try update_trails(trails, numberOfTrails);
         try draw_trails(trails, numberOfTrails, font);
 
-        raylib.clearBackground(backgroundColor);
+        frameCount = @mod(frameCount, 1000) + 1;
     }
 
     for (0..numberOfTrails) |i| {
@@ -185,13 +188,13 @@ fn update_trails(trails: []Trail, numberOfTrails: usize) !void {
         var newY: c_int = trails[i].getY() + trails[i].getFallSpeed();
         if ((newY - trails[i].getTextSize() * @as(c_int, @intCast(trails[i].getTrailLength())) > screenHeight) or (trails[i].getX() < 0 or trails[i].getX() > screenWidth)) {
             newY = rand_range(-100, 0);
-            const depth = rand_range(0, 4);
-            trails[i].setTextSize(generateDepthBasedTextSize(30, depth));
+            // const depth = rand_range(0, 4);
+            // trails[i].setTextSize(generateDepthBasedTextSize(30, depth));
             trails[i].setX(rand_range(0, screenWidth));
         }
         trails[i].setY(newY);
 
-        if (@mod(newY, 20) == 0) {
+        if (@mod(newY, 10) == 0) {
             const length = trails[i].getTrailLength();
             const allocator = std.heap.page_allocator;
             var characters: []i32 = try allocator.alloc(i32, length);
@@ -203,14 +206,14 @@ fn update_trails(trails: []Trail, numberOfTrails: usize) !void {
             trails[i].setTrailArray(characters);
         }
 
-        // if (@mod(newY, 5) == 0) {
+        // if (@mod(frameCount, 2) == 0) {
         //     if (trails[i].getX() < @divFloor(screenWidth, 2)) {
         //         trails[i].setX(trails[i].getX() - 1);
         //     } else {
         //         trails[i].setX(trails[i].getX() + 1);
         //     }
         // }
-        // if (@mod(newY, 20) == 0) {
+        // if (@mod(frameCount, 10) == 0) {
         //     trails[i].setTextSize(trails[i].getTextSize() + 1);
         // }
     }
@@ -219,7 +222,8 @@ fn update_trails(trails: []Trail, numberOfTrails: usize) !void {
 fn draw_trails(trails: []Trail, numberOfTrails: usize, font: raylib.Font) !void {
     for (0..numberOfTrails) |i| {
         for (0..trails[i].getTrailLength()) |j| {
-            const opacity = 0.75 * @as(f32, @floatFromInt(trails[i].getTrailLength() - j)) / @as(f32, @floatFromInt(trails[i].getTrailLength()));
+            const opacity = 1.5 * @as(f32, @floatFromInt(trails[i].getTrailLength() - j)) / @as(f32, @floatFromInt(trails[i].getTrailLength()));
+            // const opacity = 1;
             const pos = raylib.Vector2.init(@as(f32, @floatFromInt(trails[i].getX())), @as(f32, @floatFromInt(trails[i].getY() - @as(c_int, @intCast(j)) * trails[i].getTextSize())));
             if (j == 0) {
                 raylib.drawTextCodepoint(font, trails[i].trail_array[j], pos, @as(f32, @floatFromInt(trails[i].getTextSize())), raylib.Color.init(1, 253, 251, 255));
@@ -241,5 +245,5 @@ fn rand_range(x: c_int, y: c_int) c_int {
 }
 
 fn get_random_char() i32 {
-    return @as(i32, @intCast(rand_range(10, 1000)));
+    return @as(i32, @intCast(rand_range(1, 255)));
 }
