@@ -46,7 +46,10 @@ const Trail: type = struct {
 
         //Unsafe Not Freeing the allocator
         const allocator = std.heap.page_allocator;
-        const trail_array: []TrailCharacter = try allocator.alloc(TrailCharacter, trailLength);
+        const trail_array: []TrailCharacter = allocator.alloc(TrailCharacter, trailLength) catch |err| {
+            std.debug.panic("Error : Unable to allocate memory to {s} , {}", .{ "Trail Character Array", err });
+            return undefined;
+        };
         // defer allocator.free(trail_array);
 
         for (0..trailLength) |i| {
@@ -140,7 +143,7 @@ const font_path = "assets/dejavu.fnt";
 const icon_path = "assets/icon.png";
 const globalTextSize: c_int = 30;
 
-pub fn main() !void {
+pub fn main() void {
 
     // Initialization
     const backgroundColor = raylib.Color.init(40, 44, 52, 100);
@@ -165,12 +168,13 @@ pub fn main() !void {
 
     const numberOfTrails: usize = 500;
     const allocator = std.heap.page_allocator;
-    const trails: []Trail = try allocator.alloc(Trail, numberOfTrails);
+    const trails: []Trail = allocator.alloc(Trail, numberOfTrails) catch |err| {
+        std.debug.panic("Error : Unable to allocate memory to {s} , {}", .{ "Trails", err });
+        return undefined;
+    };
     defer allocator.free(trails);
 
-    create_trails(trails, numberOfTrails, textColor) catch |err| {
-        std.debug.print("Error {}", .{err});
-    };
+    create_trails(trails, numberOfTrails, textColor);
 
     // Main game loop
     while (!raylib.windowShouldClose()) {
@@ -193,7 +197,7 @@ pub fn main() !void {
     }
 }
 
-fn create_trails(trails: []Trail, numberOfTrails: usize, textColor: anytype) !void {
+fn create_trails(trails: []Trail, numberOfTrails: usize, textColor: anytype) void {
     for (0..numberOfTrails) |i| {
         const x_val = rand_range(0, screenWidth);
         const y_val = rand_range(-100, screenHeight);
@@ -202,13 +206,19 @@ fn create_trails(trails: []Trail, numberOfTrails: usize, textColor: anytype) !vo
 
         const length = @as(usize, @intCast(rand_range(10, 20)));
         const allocator = std.heap.page_allocator;
-        var characters: []TrailCharacter = try allocator.alloc(TrailCharacter, length);
+        var characters: []TrailCharacter = allocator.alloc(TrailCharacter, length) catch |err| {
+            std.debug.panic("Error : Unable to allocate memory to {s} , {}", .{ "Trail Character Array", err });
+            return undefined;
+        };
         defer allocator.free(characters);
 
         for (0..length) |j| {
             characters[j] = TrailCharacter.init(TrailCharacter.get_random_char(), rand_range(1, 30));
         }
-        const trail = try Trail.init(x_val, y_val, rand_range(10, 20), generateDepthBasedTextSize(globalTextSize, depth), length, depth, textColor, characters);
+        const trail = Trail.init(x_val, y_val, rand_range(10, 20), generateDepthBasedTextSize(globalTextSize, depth), length, depth, textColor, characters) catch |err| {
+            std.debug.print("{}", .{err});
+            return undefined;
+        };
         trails[i] = trail;
     }
 }
