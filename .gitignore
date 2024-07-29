@@ -1,4 +1,5 @@
 /build/
-/assets/
 /.zig-cache/
 /zig-out/
+/assets/*
+!/assets/output.gif
