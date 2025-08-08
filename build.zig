@@ -9,7 +9,7 @@ pub fn build(b: *std.Build) void {
     });
 
     //Adding Raylib-zig Dependency
-    const raylib_dep = b.dependency("raylib-zig", .{
+    const raylib_dep = b.dependency("raylib_zig", .{
         .target = target,
     });
     const raylib = raylib_dep.module("raylib"); // main raylib module

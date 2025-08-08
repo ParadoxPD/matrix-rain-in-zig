@@ -158,10 +158,14 @@ pub fn main() void {
     raylib.setWindowSize(screenWidth, screenHeight);
     raylib.toggleFullscreen();
 
-    const image = raylib.Image.init(icon_path);
+    const image = raylib.Image.init(icon_path) catch |err| {
+        std.debug.panic("Error : cannot load image . {}", .{err});
+    };
     raylib.setWindowIcon(image);
 
-    const font = raylib.Font.init(font_path);
+    const font = raylib.Font.init(font_path) catch |err| {
+        std.debug.panic("Error : cannot load image . {}", .{err});
+    };
     while (!font.isReady()) {}
 
     raylib.setTargetFPS(windowFPS);
@@ -178,7 +182,7 @@ pub fn main() void {
 
     // Main game loop
     while (!raylib.windowShouldClose()) {
-        if (raylib.isKeyPressed(raylib.KeyboardKey.key_q)) {
+        if (raylib.isKeyPressed(raylib.KeyboardKey.q)) {
             raylib.toggleFullscreen();
         }
         raylib.clearBackground(backgroundColor);
