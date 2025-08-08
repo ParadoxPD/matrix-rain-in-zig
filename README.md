@@ -8,7 +8,7 @@
 
 ```bash
 $ zig init 
-$ zig fetch --save https://github.com/Not-Nik/raylib-zig/archive/devel.tar.gz
+$ zig fetch --save git+https://github.com/raylib-zig/raylib-zig#devel
 ```
 
 ```batch
